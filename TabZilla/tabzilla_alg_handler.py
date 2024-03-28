@@ -209,6 +209,12 @@ def rtdl_FTTransformer():
 
     return model
 
+@register_model
+def CNN():
+    from models.soft_ordering_1dcnn import CNN as model
+
+    return model
+
 
 def get_model(model_name):
     if model_name in ALL_MODELS:
