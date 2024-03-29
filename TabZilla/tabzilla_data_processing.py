@@ -124,6 +124,7 @@ def process_data(
     scaler="None",
     one_hot_encode=False,
     impute=True,
+    fourier=False,
     args=None,
 ):
     # validate the scaler
@@ -206,6 +207,13 @@ def process_data(
         X_val = np.concatenate([new_x1_val, X_val[:, num_mask]], axis=1)
         if verbose:
             print("New Shape:", X_train.shape)
+    
+    if fourier:
+        n_features = X_train.shape[1]
+        B = np.random.normal(size=(n_features, 2), scale=fourier)
+        X_train = fourier_mapping(X_train, B)
+        X_val = fourier_mapping(X_val, B)
+        X_test = fourier_mapping(X_test, B)
 
     # create subset of dataset if needed
     if (
@@ -245,9 +253,17 @@ def process_data(
                 seed=dataset.subset_random_seed,
             )
         print("subset created")
-
+    
     return {
         "data_train": (X_train, y_train),
         "data_val": (X_val, y_val),
         "data_test": (X_test, y_test),
     }
+
+
+def fourier_mapping(x, B):
+  if B is None:
+    return x
+  else:
+    x_proj = (2.*np.pi*x) @ B.T
+    return np.concatenate([np.sin(x_proj), np.cos(x_proj)], axis=-1)
